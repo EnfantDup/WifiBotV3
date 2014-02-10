@@ -1,0 +1,4 @@
+Travail actuel :
+
+- Creation de l'interface
+- Connexion basique et fonctionnelle au robot.
