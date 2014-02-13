@@ -51,6 +51,7 @@ namespace WifiBotV3 {
 	private: System::Windows::Forms::Label^  label1;
 	private: System::Windows::Forms::ComboBox^  comboBox1;
 	private: Client* client;
+	private: System::Windows::Forms::Button^  button6;
 
 
 	private:
@@ -74,6 +75,7 @@ namespace WifiBotV3 {
 			this->button5 = (gcnew System::Windows::Forms::Button());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
+			this->button6 = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->trackBar1))->BeginInit();
 			this->SuspendLayout();
 			// 
@@ -85,6 +87,7 @@ namespace WifiBotV3 {
 			this->button1->TabIndex = 0;
 			this->button1->Text = L"HAUT";
 			this->button1->UseVisualStyleBackColor = true;
+			this->button1->Click += gcnew System::EventHandler(this, &Form1::button1_Click);
 			// 
 			// button2
 			// 
@@ -128,7 +131,7 @@ namespace WifiBotV3 {
 			// 
 			this->button5->Location = System::Drawing::Point(142, 236);
 			this->button5->Name = L"button5";
-			this->button5->Size = System::Drawing::Size(75, 23);
+			this->button5->Size = System::Drawing::Size(82, 23);
 			this->button5->TabIndex = 5;
 			this->button5->Text = L"Connexion";
 			this->button5->UseVisualStyleBackColor = true;
@@ -155,12 +158,23 @@ namespace WifiBotV3 {
 			this->comboBox1->Size = System::Drawing::Size(121, 21);
 			this->comboBox1->TabIndex = 7;
 			// 
+			// button6
+			// 
+			this->button6->Enabled = false;
+			this->button6->Location = System::Drawing::Point(142, 261);
+			this->button6->Name = L"button6";
+			this->button6->Size = System::Drawing::Size(82, 23);
+			this->button6->TabIndex = 8;
+			this->button6->Text = L"Deconnexion";
+			this->button6->UseVisualStyleBackColor = true;
+			// 
 			// Form1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->AutoSize = true;
 			this->ClientSize = System::Drawing::Size(274, 296);
+			this->Controls->Add(this->button6);
 			this->Controls->Add(this->comboBox1);
 			this->Controls->Add(this->label1);
 			this->Controls->Add(this->button5);
@@ -181,10 +195,16 @@ private: System::Void button5_Click(System::Object^  sender, System::EventArgs^ 
 			 if(client->connexion())
 			 {
 				 this->label1->ForeColor = System::Drawing::Color::Green;
+				 //On desactive le bouton connexion et on active celui de deconnexion
+				 this->button5->Enabled = false;
+				 this->button6->Enabled = true;
 			 }
 			 else
 				 this->label1->ForeColor = System::Drawing::Color::Blue;
 			
+		 }
+private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
+			 client->sendData();
 		 }
 };
 }
