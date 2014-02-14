@@ -97,6 +97,7 @@ namespace WifiBotV3 {
 			this->button2->TabIndex = 1;
 			this->button2->Text = L"BAS";
 			this->button2->UseVisualStyleBackColor = true;
+			this->button2->Click += gcnew System::EventHandler(this, &Form1::button2_Click);
 			// 
 			// button3
 			// 
@@ -167,6 +168,7 @@ namespace WifiBotV3 {
 			this->button6->TabIndex = 8;
 			this->button6->Text = L"Deconnexion";
 			this->button6->UseVisualStyleBackColor = true;
+			this->button6->Click += gcnew System::EventHandler(this, &Form1::button6_Click);
 			// 
 			// Form1
 			// 
@@ -204,7 +206,18 @@ private: System::Void button5_Click(System::Object^  sender, System::EventArgs^ 
 			
 		 }
 private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-			 client->sendData();
+			 if(!client->sendData())
+				 this->label1->ForeColor = System::Drawing::Color::Blue;
+		 }
+private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
+		 }
+private: System::Void button6_Click(System::Object^  sender, System::EventArgs^  e) {
+			 
+			 client->deconnexion();
+			 this->label1->ForeColor = System::Drawing::Color::Red;
+			 //On desactive le bouton connexion et on active celui de deconnexion
+			 this->button6->Enabled = false;
+			 this->button5->Enabled = true;
 		 }
 };
 }

@@ -32,7 +32,7 @@ bool Client::connexion()
 
 	//Proprietes
 	addr_serv.sin_family=AF_INET;
-	addr_serv.sin_addr.s_addr=inet_addr("127.0.0.1"); 
+	addr_serv.sin_addr.s_addr=inet_addr("192.168.1.106"); 
 	addr_serv.sin_port=htons(15020); 
 
 	//Et enfin connexion
@@ -68,7 +68,8 @@ bool Client::sendData()
 	dataToSend[7] = (char)(crc);
 	dataToSend[8] = (char)(crc >> 8);
 
-	int erreur = send(sock, dataToSend, strlen(dataToSend), 0);
+	int erreur = send(sock, dataToSend, 9, 0);
+
 	if (erreur == SOCKET_ERROR)
 		return false;
 	else
