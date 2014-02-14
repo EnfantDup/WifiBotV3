@@ -10,7 +10,7 @@ bool Client::connexion()
 {
 	
 	int erreur;
-	bool valide = true; //Connexion valide ?
+	bool valide = true; //Connexion valide ? //ok
 
 	//Initialisation
 	erreur = WSAStartup(MAKEWORD(2,2),&init);
