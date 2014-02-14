@@ -10,7 +10,7 @@ bool Client::connexion()
 {
 	
 	int erreur;
-	bool valide = true; //Connexion valide ? //ok
+	bool valide = true; //Connexion valide ?
 
 	//Initialisation
 	erreur = WSAStartup(MAKEWORD(2,2),&init);
@@ -64,6 +64,7 @@ bool Client::sendData()
 	dataToSend[5] = (char)(0);
 	dataToSend[6] = (char)(80);
 
+	//CRC
 	short int crc = Crc16(dataToSend, 7);
 	dataToSend[7] = (char)(crc);
 	dataToSend[8] = (char)(crc >> 8);
