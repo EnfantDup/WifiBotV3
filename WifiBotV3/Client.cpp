@@ -56,13 +56,22 @@ void Client::deconnexion()
 bool Client::sendData()
 {
 	//Buffer de test
+	/*
 	dataToSend[0] = (char)(255);
 	dataToSend[1] = (char)(0x07);
 	dataToSend[2] = (char)(120);
 	dataToSend[3] = (char)(0);
 	dataToSend[4] = (char)(120);
 	dataToSend[5] = (char)(0);
-	dataToSend[6] = (char)(80);
+	dataToSend[6] = (char)(80);*/
+
+	dataToSend[0] = (char)(255); //255
+	dataToSend[1] = (char)(0x07); //Taille
+	dataToSend[2] = (char)(abs(robot.getLeftSpeed()); //Vitesse à gauche
+	dataToSend[3] = (char)(0);
+	dataToSend[4] = (char)(abs(robot.getRightSpeed()); //Vitesse à droite
+	dataToSend[5] = (char)(0);
+	dataToSend[6] = (char)(80); //En avant
 
 	//CRC
 	short int crc = Crc16(dataToSend, 7);

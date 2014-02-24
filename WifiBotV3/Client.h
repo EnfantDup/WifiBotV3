@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include <winsock.h>
 #include <iostream>
+#include <cmath>
+#include "Robot.h"
 
 
 class Client
@@ -17,4 +19,5 @@ class Client
 		SOCKET sock; //Socket TCP
 		SOCKADDR_IN addr_serv; //Adresse du wifibot
 		char dataToSend[9];
+		Robot robot;
 };
