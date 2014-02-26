@@ -4,6 +4,7 @@ using namespace std;
 
 Client::Client()
 {
+	robot = new Robot();
 }
 
 bool Client::connexion()
@@ -32,7 +33,7 @@ bool Client::connexion()
 
 	//Proprietes
 	addr_serv.sin_family=AF_INET;
-	addr_serv.sin_addr.s_addr=inet_addr("192.168.1.106"); 
+	addr_serv.sin_addr.s_addr=inet_addr("127.0.0.1"); 
 	addr_serv.sin_port=htons(15020); 
 
 	//Et enfin connexion
@@ -65,13 +66,23 @@ bool Client::sendData()
 	dataToSend[5] = (char)(0);
 	dataToSend[6] = (char)(80);*/
 
+	char direction = 80; //En avant
+
+	robot->proceedSpeed();
+
+	if(robot->getLeftSpeed() < 0)
+		direction -= 16; //Roues gauche en arrière
+
+	if(robot->getRightSpeed() < 0)
+		direction -= 64; //Roues droites en arrière
+
 	dataToSend[0] = (char)(255); //255
 	dataToSend[1] = (char)(0x07); //Taille
-	dataToSend[2] = (char)(abs(robot.getLeftSpeed()); //Vitesse à gauche
+	dataToSend[2] = (char)(abs(robot->getLeftSpeed())); //Vitesse à gauche
 	dataToSend[3] = (char)(0);
-	dataToSend[4] = (char)(abs(robot.getRightSpeed()); //Vitesse à droite
+	dataToSend[4] = (char)(abs(robot->getRightSpeed())); //Vitesse à droite
 	dataToSend[5] = (char)(0);
-	dataToSend[6] = (char)(80); //En avant
+	dataToSend[6] = (char)(direction);
 
 	//CRC
 	short int crc = Crc16(dataToSend, 7);
@@ -106,4 +117,9 @@ short int Client::Crc16(char *Adresse_tab , unsigned char Taille_max)
 			}
 		}
 		return(Crc);
+}
+
+Robot* Client::getRobot()
+{
+	return robot;
 }

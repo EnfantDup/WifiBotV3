@@ -87,7 +87,8 @@ namespace WifiBotV3 {
 			this->button1->TabIndex = 0;
 			this->button1->Text = L"HAUT";
 			this->button1->UseVisualStyleBackColor = true;
-			this->button1->Click += gcnew System::EventHandler(this, &Form1::button1_Click);
+			this->button1->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button1_MouseDown);
+			this->button1->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button1_MouseUp);
 			// 
 			// button2
 			// 
@@ -97,7 +98,8 @@ namespace WifiBotV3 {
 			this->button2->TabIndex = 1;
 			this->button2->Text = L"BAS";
 			this->button2->UseVisualStyleBackColor = true;
-			this->button2->Click += gcnew System::EventHandler(this, &Form1::button2_Click);
+			this->button2->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button2_MouseDown);
+			this->button2->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button2_MouseUp);
 			// 
 			// button3
 			// 
@@ -107,6 +109,8 @@ namespace WifiBotV3 {
 			this->button3->TabIndex = 2;
 			this->button3->Text = L"DROITE";
 			this->button3->UseVisualStyleBackColor = true;
+			this->button3->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button3_MouseDown);
+			this->button3->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button3_MouseUp);
 			// 
 			// button4
 			// 
@@ -116,6 +120,8 @@ namespace WifiBotV3 {
 			this->button4->TabIndex = 3;
 			this->button4->Text = L"Gauche";
 			this->button4->UseVisualStyleBackColor = true;
+			this->button4->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button4_MouseDown);
+			this->button4->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button4_MouseUp);
 			// 
 			// trackBar1
 			// 
@@ -125,8 +131,8 @@ namespace WifiBotV3 {
 			this->trackBar1->Name = L"trackBar1";
 			this->trackBar1->Size = System::Drawing::Size(237, 45);
 			this->trackBar1->TabIndex = 4;
-			this->trackBar1->TickFrequency = 50;
-			this->trackBar1->Value = 1;
+			this->trackBar1->TickFrequency = 10;
+			this->trackBar1->Value = 100;
 			// 
 			// button5
 			// 
@@ -185,8 +191,11 @@ namespace WifiBotV3 {
 			this->Controls->Add(this->button3);
 			this->Controls->Add(this->button2);
 			this->Controls->Add(this->button1);
+			this->KeyPreview = true;
 			this->Name = L"Form1";
 			this->Text = L"WifiBot V3";
+			this->KeyUp += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyUp);
+			this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyDown);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->trackBar1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
@@ -205,12 +214,6 @@ private: System::Void button5_Click(System::Object^  sender, System::EventArgs^ 
 				 this->label1->ForeColor = System::Drawing::Color::Blue;
 			
 		 }
-private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-			 if(!client->sendData())
-				 this->label1->ForeColor = System::Drawing::Color::Blue;
-		 }
-private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
-		 }
 private: System::Void button6_Click(System::Object^  sender, System::EventArgs^  e) {
 			 
 			 client->deconnexion();
@@ -218,6 +221,58 @@ private: System::Void button6_Click(System::Object^  sender, System::EventArgs^ 
 			 //On desactive le bouton connexion et on active celui de deconnexion
 			 this->button6->Enabled = false;
 			 this->button5->Enabled = true;
+		 }
+private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
+			 if(e->KeyCode == Keys::Z)
+				 client->getRobot()->setKeyUp(true);
+			 else if(e->KeyCode == Keys::S)
+				 client->getRobot()->setKeyDown(true);
+			 else if(e->KeyCode == Keys::Q)
+				 client->getRobot()->setKeyLeft(true);
+			 else if(e->KeyCode == Keys::D)
+				 client->getRobot()->setKeyRight(true);
+		 }
+private: System::Void Form1_KeyUp(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
+			 if(e->KeyCode == Keys::Z)
+				 client->getRobot()->setKeyUp(false);
+			 else if(e->KeyCode == Keys::S)
+				 client->getRobot()->setKeyDown(false);
+			 else if(e->KeyCode == Keys::Q)
+				 client->getRobot()->setKeyLeft(false);
+			 else if(e->KeyCode == Keys::D)
+				 client->getRobot()->setKeyRight(false);
+		 }
+private: System::Void button1_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyUp(true);
+		 }
+private: System::Void button1_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyUp(false);
+		 }
+private: System::Void button2_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyDown(true);
+		 }
+private: System::Void button2_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyDown(false);
+		 }
+private: System::Void button3_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyRight(true);
+		 }
+private: System::Void button3_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyRight(false);
+		 }
+private: System::Void button4_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyLeft(true);
+		 }
+private: System::Void button4_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
+				 client->getRobot()->setKeyLeft(false);
 		 }
 };
 }
