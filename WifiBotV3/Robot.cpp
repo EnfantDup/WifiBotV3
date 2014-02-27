@@ -35,10 +35,9 @@ void Robot::setRightSpeed(int rSpeed)
 		rightSpeed = rSpeed;
 }
 
-void Robot::setSpeed(int l, int r)
+void Robot::setSpeed(int s)
 {
-	setLeftSpeed(l);
-	setRightSpeed(r);
+	speed = s;
 }
 
 void Robot::proceedSpeed()

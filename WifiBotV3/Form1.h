@@ -133,6 +133,7 @@ namespace WifiBotV3 {
 			this->trackBar1->TabIndex = 4;
 			this->trackBar1->TickFrequency = 10;
 			this->trackBar1->Value = 100;
+			this->trackBar1->ValueChanged += gcnew System::EventHandler(this, &Form1::trackBar1_ValueChanged);
 			// 
 			// button5
 			// 
@@ -164,6 +165,7 @@ namespace WifiBotV3 {
 			this->comboBox1->Name = L"comboBox1";
 			this->comboBox1->Size = System::Drawing::Size(121, 21);
 			this->comboBox1->TabIndex = 7;
+			this->comboBox1->SelectedIndex = 1;
 			// 
 			// button6
 			// 
@@ -203,6 +205,13 @@ namespace WifiBotV3 {
 		}
 #pragma endregion
 private: System::Void button5_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(this->comboBox1->SelectedIndex == 0)
+				 this->client->setIp("127.0.0.1");
+			 else if(this->comboBox1->SelectedIndex == 1)
+				 this->client->setIp("192.168.1.106");
+			
+
 			 if(client->connexion())
 			 {
 				 this->label1->ForeColor = System::Drawing::Color::Green;
@@ -273,6 +282,9 @@ private: System::Void button4_MouseDown(System::Object^  sender, System::Windows
 private: System::Void button4_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyLeft(false);
+		 }
+private: System::Void trackBar1_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
+			 client->getRobot()->setSpeed(this->trackBar1->Value);
 		 }
 };
 }

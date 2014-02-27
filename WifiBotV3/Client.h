@@ -14,6 +14,7 @@ class Client
 		bool sendData();
 		short int Crc16(char *data, unsigned char Taille_max);
 		Robot* getRobot();
+		void setIp(std::string ip);
 
 	private:
 		WSADATA init; // Variable d'initialisation
