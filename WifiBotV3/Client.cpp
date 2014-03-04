@@ -33,7 +33,6 @@ bool Client::connexion()
 
 	//Proprietes
 	addr_serv.sin_family=AF_INET;
-	addr_serv.sin_addr.s_addr=inet_addr("127.0.0.1"); 
 	addr_serv.sin_port=htons(15020); 
 
 	//Et enfin connexion
@@ -65,36 +64,65 @@ bool Client::sendData()
 	dataToSend[4] = (char)(120);
 	dataToSend[5] = (char)(0);
 	dataToSend[6] = (char)(80);*/
+	
+	if(robot->getSimulateur())
+	{
+		//Simulateur
 
-	char direction = 80; //En avant
+		robot->proceedSpeed();
+		char data[2];
+		char left = 0, right = 0;
+		left = abs(robot->getLeftSpeed()/4);
+		if(robot->getLeftSpeed() >= 0)
+			left += 64;
 
-	robot->proceedSpeed();
+		right = abs(robot->getRightSpeed()/4);
+		if(robot->getRightSpeed() >= 0)
+			right += 64;
 
-	if(robot->getLeftSpeed() < 0)
-		direction -= 16; //Roues gauche en arrière
+		data[0] = left;
+		data[1] = right;
 
-	if(robot->getRightSpeed() < 0)
-		direction -= 64; //Roues droites en arrière
+		int erreur = send(sock, data, 2, 0);
 
-	dataToSend[0] = (char)(255); //255
-	dataToSend[1] = (char)(0x07); //Taille
-	dataToSend[2] = (char)(abs(robot->getLeftSpeed())); //Vitesse à gauche
-	dataToSend[3] = (char)(0);
-	dataToSend[4] = (char)(abs(robot->getRightSpeed())); //Vitesse à droite
-	dataToSend[5] = (char)(0);
-	dataToSend[6] = (char)(direction);
-
-	//CRC
-	short int crc = Crc16(dataToSend, 7);
-	dataToSend[7] = (char)(crc);
-	dataToSend[8] = (char)(crc >> 8);
-
-	int erreur = send(sock, dataToSend, 9, 0);
-
-	if (erreur == SOCKET_ERROR)
-		return false;
+		if (erreur == SOCKET_ERROR)
+			return false;
+		else
+			return true;
+	}
 	else
-		return true;
+	{
+		//Robot
+		char direction = 80; //En avant
+
+		robot->proceedSpeed();
+
+		if(robot->getLeftSpeed() < 0)
+			direction -= 16; //Roues gauche en arrière
+
+		if(robot->getRightSpeed() < 0)
+			direction -= 64; //Roues droites en arrière
+
+		dataToSend[0] = (char)(255); //255
+		dataToSend[1] = (char)(0x07); //Taille
+		dataToSend[2] = (char)(abs(robot->getLeftSpeed())); //Vitesse à gauche
+		dataToSend[3] = (char)(0);
+		dataToSend[4] = (char)(abs(robot->getRightSpeed())); //Vitesse à droite
+		dataToSend[5] = (char)(0);
+		dataToSend[6] = (char)(direction);
+
+		//CRC
+		short int crc = Crc16(dataToSend, 7);
+		dataToSend[7] = (char)(crc);
+		dataToSend[8] = (char)(crc >> 8);
+
+		int erreur = send(sock, dataToSend, 9, 0);
+
+		if (erreur == SOCKET_ERROR)
+			return false;
+		else
+			return true;
+	}
 }
 
 short int Client::Crc16(char *Adresse_tab , unsigned char Taille_max)
@@ -105,7 +133,7 @@ short int Client::Crc16(char *Adresse_tab , unsigned char Taille_max)
 		unsigned int CptBit = 0;
 		unsigned int Parity= 0;
 
-		for ( CptOctet= 1 ; CptOctet < Taille_max ; CptOctet++)
+		for ( CptOctet= 1; CptOctet < Taille_max ; CptOctet++)
 		{
 			Crc ^= *( Adresse_tab + CptOctet);
 			for ( CptBit = 0; CptBit <= 7 ; CptBit++)

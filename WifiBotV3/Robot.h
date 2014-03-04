@@ -8,6 +8,7 @@ class Robot
 		Robot();
 		int getLeftSpeed();
 		int getRightSpeed();
+		bool getSimulateur();
 		void setLeftSpeed(int lSpeed);
 		void setRightSpeed(int rSpeed);
 		void setSpeed(int s);
@@ -16,12 +17,14 @@ class Robot
 		void setKeyDown(bool down);
 		void setKeyLeft(bool left);
 		void setKeyRight(bool right);
+		void setSimulateur(bool b);
 
 	private:
 		bool keyUp;
 		bool keyDown;
 		bool keyLeft;
 		bool keyRight;
+		bool simulateur;
 		int speed;
 		int leftSpeed;
 		int rightSpeed;

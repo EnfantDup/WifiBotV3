@@ -11,6 +11,7 @@ Robot::Robot()
 	keyDown = false;
 	keyLeft = false;
 	keyRight = false;
+	simulateur = false;
 }
 
 int Robot::getLeftSpeed()
@@ -107,4 +108,14 @@ void Robot::setKeyLeft(bool left)
 void Robot::setKeyRight(bool right)
 {
 	keyRight = right;
+}
+
+void Robot::setSimulateur(bool b)
+{
+	simulateur = b;
+}
+
+bool Robot::getSimulateur()
+{
+	return simulateur;
 }

@@ -207,9 +207,15 @@ namespace WifiBotV3 {
 private: System::Void button5_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			 if(this->comboBox1->SelectedIndex == 0)
+			 {
 				 this->client->setIp("127.0.0.1");
+				 this->client->getRobot()->setSimulateur(true);
+			 }
 			 else if(this->comboBox1->SelectedIndex == 1)
+			 {
 				 this->client->setIp("192.168.1.106");
+				this->client->getRobot()->setSimulateur(false);
+			 }
 			
 
 			 if(client->connexion())
@@ -240,6 +246,7 @@ private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Fo
 				 client->getRobot()->setKeyLeft(true);
 			 else if(e->KeyCode == Keys::D)
 				 client->getRobot()->setKeyRight(true);
+			 client->sendData();
 		 }
 private: System::Void Form1_KeyUp(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 			 if(e->KeyCode == Keys::Z)
@@ -250,41 +257,51 @@ private: System::Void Form1_KeyUp(System::Object^  sender, System::Windows::Form
 				 client->getRobot()->setKeyLeft(false);
 			 else if(e->KeyCode == Keys::D)
 				 client->getRobot()->setKeyRight(false);
+			 client->sendData();
 		 }
 private: System::Void button1_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyUp(true);
+			 client->sendData();
 		 }
 private: System::Void button1_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyUp(false);
+			 client->sendData();
 		 }
 private: System::Void button2_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyDown(true);
+			 client->sendData();
 		 }
 private: System::Void button2_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyDown(false);
+			 client->sendData();
 		 }
 private: System::Void button3_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyRight(true);
+			 client->sendData();
 		 }
 private: System::Void button3_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyRight(false);
+			 client->sendData();
 		 }
 private: System::Void button4_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyLeft(true);
+			 client->sendData();
 		 }
 private: System::Void button4_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
 				 client->getRobot()->setKeyLeft(false);
+			 client->sendData();
 		 }
 private: System::Void trackBar1_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
 			 client->getRobot()->setSpeed(this->trackBar1->Value);
+			 client->sendData();
 		 }
 };
 }
