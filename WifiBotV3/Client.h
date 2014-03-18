@@ -4,7 +4,6 @@
 #include <cmath>
 #include "Robot.h"
 
-
 class Client
 {
 	public:
@@ -15,6 +14,7 @@ class Client
 		short int Crc16(char *data, unsigned char Taille_max);
 		Robot* getRobot();
 		void setIp(std::string ip);
+		void run();
 
 	private:
 		WSADATA init; // Variable d'initialisation
@@ -22,4 +22,5 @@ class Client
 		SOCKADDR_IN addr_serv; //Adresse du wifibot
 		char dataToSend[9];
 		Robot* robot;
+		
 };

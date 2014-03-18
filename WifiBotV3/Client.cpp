@@ -156,3 +156,8 @@ void Client::setIp(std::string ip)
 {
 	addr_serv.sin_addr.s_addr=inet_addr(ip.c_str());
 }
+
+void Client::run()
+{
+	Sleep(20000);
+}

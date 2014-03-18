@@ -20,6 +20,7 @@ namespace WifiBotV3 {
 	/// </summary>
 	public ref class Form1 : public System::Windows::Forms::Form
 	{
+		private: delegate void Changer(int nb);
 	public:
 		Form1(void)
 		{
@@ -28,6 +29,20 @@ namespace WifiBotV3 {
 			//TODO: Add the constructor code here
 			//
 			client = new Client();
+		}
+
+		void run()
+		{
+			Changer^ c = gcnew Changer(this, &Form1::setValue);
+			int nb = 10;
+			array<Object^>^myStringArray = {nb};
+			this->Invoke(c, myStringArray);
+			Sleep(2000);
+		}
+
+		void setValue(int nb)
+		{
+			numericUpDown1->Value = nb;
 		}
 
 	protected:
@@ -41,8 +56,11 @@ namespace WifiBotV3 {
 				delete components;
 			}
 		}
+
+	private: Client* client;
+				
+
 	private: System::Windows::Forms::Button^  button1;
-	protected: 
 	private: System::Windows::Forms::Button^  button2;
 	private: System::Windows::Forms::Button^  button3;
 	private: System::Windows::Forms::Button^  button4;
@@ -50,8 +68,9 @@ namespace WifiBotV3 {
 	private: System::Windows::Forms::Button^  button5;
 	private: System::Windows::Forms::Label^  label1;
 	private: System::Windows::Forms::ComboBox^  comboBox1;
-	private: Client* client;
 	private: System::Windows::Forms::Button^  button6;
+	private: System::Threading::Thread^ myThread;
+	private: System::Windows::Forms::NumericUpDown^  numericUpDown1;
 
 
 	private:
@@ -76,7 +95,9 @@ namespace WifiBotV3 {
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
 			this->button6 = (gcnew System::Windows::Forms::Button());
+			this->numericUpDown1 = (gcnew System::Windows::Forms::NumericUpDown());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->trackBar1))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// button1
@@ -132,7 +153,7 @@ namespace WifiBotV3 {
 			this->trackBar1->Size = System::Drawing::Size(237, 45);
 			this->trackBar1->TabIndex = 4;
 			this->trackBar1->TickFrequency = 10;
-			this->trackBar1->Value = 100;
+			this->trackBar1->Value = 200;
 			this->trackBar1->ValueChanged += gcnew System::EventHandler(this, &Form1::trackBar1_ValueChanged);
 			// 
 			// button5
@@ -165,6 +186,7 @@ namespace WifiBotV3 {
 			this->comboBox1->Name = L"comboBox1";
 			this->comboBox1->Size = System::Drawing::Size(121, 21);
 			this->comboBox1->TabIndex = 7;
+			this->comboBox1->SelectedIndexChanged += gcnew System::EventHandler(this, &Form1::comboBox1_SelectedIndexChanged);
 			this->comboBox1->SelectedIndex = 1;
 			// 
 			// button6
@@ -178,12 +200,20 @@ namespace WifiBotV3 {
 			this->button6->UseVisualStyleBackColor = true;
 			this->button6->Click += gcnew System::EventHandler(this, &Form1::button6_Click);
 			// 
+			// numericUpDown1
+			// 
+			this->numericUpDown1->Location = System::Drawing::Point(50, 195);
+			this->numericUpDown1->Name = L"numericUpDown1";
+			this->numericUpDown1->Size = System::Drawing::Size(120, 20);
+			this->numericUpDown1->TabIndex = 9;
+			// 
 			// Form1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->AutoSize = true;
 			this->ClientSize = System::Drawing::Size(274, 296);
+			this->Controls->Add(this->numericUpDown1);
 			this->Controls->Add(this->button6);
 			this->Controls->Add(this->comboBox1);
 			this->Controls->Add(this->label1);
@@ -199,6 +229,7 @@ namespace WifiBotV3 {
 			this->KeyUp += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyUp);
 			this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyDown);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->trackBar1))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -216,7 +247,8 @@ private: System::Void button5_Click(System::Object^  sender, System::EventArgs^ 
 				 this->client->setIp("192.168.1.106");
 				this->client->getRobot()->setSimulateur(false);
 			 }
-			
+			/*myThread = gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(this, &Form1::run));
+			myThread->Start();*/
 
 			 if(client->connexion())
 			 {
@@ -240,22 +272,22 @@ private: System::Void button6_Click(System::Object^  sender, System::EventArgs^ 
 private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 			 if(e->KeyCode == Keys::Z)
 				 client->getRobot()->setKeyUp(true);
-			 else if(e->KeyCode == Keys::S)
+			 if(e->KeyCode == Keys::S)
 				 client->getRobot()->setKeyDown(true);
-			 else if(e->KeyCode == Keys::Q)
+			 if(e->KeyCode == Keys::Q)
 				 client->getRobot()->setKeyLeft(true);
-			 else if(e->KeyCode == Keys::D)
+			 if(e->KeyCode == Keys::D)
 				 client->getRobot()->setKeyRight(true);
 			 client->sendData();
 		 }
 private: System::Void Form1_KeyUp(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 			 if(e->KeyCode == Keys::Z)
 				 client->getRobot()->setKeyUp(false);
-			 else if(e->KeyCode == Keys::S)
+			 if(e->KeyCode == Keys::S)
 				 client->getRobot()->setKeyDown(false);
-			 else if(e->KeyCode == Keys::Q)
+			 if(e->KeyCode == Keys::Q)
 				 client->getRobot()->setKeyLeft(false);
-			 else if(e->KeyCode == Keys::D)
+			 if(e->KeyCode == Keys::D)
 				 client->getRobot()->setKeyRight(false);
 			 client->sendData();
 		 }
@@ -302,6 +334,8 @@ private: System::Void button4_MouseUp(System::Object^  sender, System::Windows::
 private: System::Void trackBar1_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
 			 client->getRobot()->setSpeed(this->trackBar1->Value);
 			 client->sendData();
+		 }
+private: System::Void comboBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 };
 }
