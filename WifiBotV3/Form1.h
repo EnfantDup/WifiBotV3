@@ -20,7 +20,7 @@ namespace WifiBotV3 {
 	/// </summary>
 	public ref class Form1 : public System::Windows::Forms::Form
 	{
-		private: delegate void Changer(int nb);
+
 	public:
 		Form1(void)
 		{
@@ -28,22 +28,125 @@ namespace WifiBotV3 {
 			//
 			//TODO: Add the constructor code here
 			//
-			client = new Client();
+			mutex = gcnew System::Threading::Mutex;
+			robot = gcnew Robot(mutex);
 		}
 
 		void run()
 		{
-			Changer^ c = gcnew Changer(this, &Form1::setValue);
+			/*Changer^ c = gcnew Changer(this, &Form1::setValue);
 			int nb = 10;
 			array<Object^>^myStringArray = {nb};
 			this->Invoke(c, myStringArray);
-			Sleep(2000);
+			Sleep(2000);*/
+			//GetLock^ l = gcnew GetLock(this, &Form::getLock);
+
+
+			try
+			{
+				//Port et connexion
+				Int32 port = 15020;
+			    client = gcnew System::Net::Sockets::TcpClient(robot->getIp(), port);
+
+				//Récupération du flux
+				System::Net::Sockets::NetworkStream^ stream = client->GetStream();
+
+				 
+				while(client->Connected)
+				{
+					sendData(stream);
+					System::Threading::Thread::Sleep(50);
+				}
+		   }
+		   catch ( ArgumentNullException^ e ) 
+		   {
+			  Console::WriteLine( "ArgumentNullException: {0}", e );
+		   }
+		   catch ( System::Net::Sockets::SocketException^ e ) 
+		   {
+			  Console::WriteLine( "SocketException: {0}", e );
+		   }
+		}
+		void sendData(System::Net::Sockets::NetworkStream^ stream)
+		{
+			mutex->WaitOne();
+			if(robot->getSimulateur())
+			{
+				//Simulateur
+
+				robot->proceedSpeed();
+				array<Byte>^ data = gcnew array<Byte>(2);
+				char left = 0, right = 0;
+				left = abs(robot->getLeftSpeed()/4);
+				right = abs(robot->getRightSpeed()/4);
+				mutex->ReleaseMutex();
+
+				if(left >= 0)
+					left += 64;
+
+				if(right >= 0)
+					right += 64;
+
+				data[0] = left;
+				data[1] = right;
+				stream->Write(data, 0, data->Length);
+			}
+			else
+			{
+				//Robot
+				char direction = 80; //En avant
+				array<Byte>^ dataToSend = gcnew array<Byte>(9);
+
+				robot->proceedSpeed();
+
+				if(robot->getLeftSpeed() < 0)
+					direction -= 16; //Roues gauche en arrière
+
+				if(robot->getRightSpeed() < 0)
+					direction -= 64; //Roues droites en arrière
+
+				dataToSend[0] = (char)(255); //255
+				dataToSend[1] = (char)(0x07); //Taille
+				dataToSend[2] = (char)(abs(robot->getLeftSpeed())); //Vitesse à gauche
+				dataToSend[3] = (char)(0);
+				dataToSend[4] = (char)(abs(robot->getRightSpeed())); //Vitesse à droite
+				dataToSend[5] = (char)(0);
+				dataToSend[6] = (char)(direction);
+				mutex->ReleaseMutex();
+
+				//CRC
+				short int crc = Crc16(dataToSend, 7);
+				dataToSend[7] = (char)(crc);
+				dataToSend[8] = (char)(crc >> 8);
+
+				stream->Write(dataToSend, 0, dataToSend->Length);
+			}
+			
+	}
+
+		short int Crc16(array<Byte>^ Adresse_tab , unsigned char Taille_max)
+		{
+				unsigned int Crc = 0xFFFF;
+				unsigned int Polynome = 0xA001;
+				unsigned int CptOctet = 0;
+				unsigned int CptBit = 0;
+				unsigned int Parity= 0;
+
+				for ( CptOctet= 1; CptOctet < Taille_max ; CptOctet++)
+				{
+					Crc ^= Adresse_tab[CptOctet];
+					for ( CptBit = 0; CptBit <= 7 ; CptBit++)
+					{
+						Parity= Crc;
+						Crc >>= 1;
+						if (Parity%2 == true) 
+							Crc ^= Polynome;
+					}
+				}
+				return(Crc);
 		}
 
-		void setValue(int nb)
-		{
-			numericUpDown1->Value = nb;
-		}
+	
 
 	protected:
 		/// <summary>
@@ -57,9 +160,10 @@ namespace WifiBotV3 {
 			}
 		}
 
-	private: Client* client;
-				
+	private: Robot^ robot;
 
+				
+	private: System::Threading::Mutex^ mutex;
 	private: System::Windows::Forms::Button^  button1;
 	private: System::Windows::Forms::Button^  button2;
 	private: System::Windows::Forms::Button^  button3;
@@ -71,6 +175,7 @@ namespace WifiBotV3 {
 	private: System::Windows::Forms::Button^  button6;
 	private: System::Threading::Thread^ myThread;
 	private: System::Windows::Forms::NumericUpDown^  numericUpDown1;
+	private: System::Net::Sockets::TcpClient^ client;
 
 
 	private:
@@ -236,20 +341,19 @@ namespace WifiBotV3 {
 		}
 #pragma endregion
 private: System::Void button5_Click(System::Object^  sender, System::EventArgs^  e) {
-
+			 mutex->WaitOne();
 			 if(this->comboBox1->SelectedIndex == 0)
 			 {
-				 this->client->setIp("127.0.0.1");
-				 this->client->getRobot()->setSimulateur(true);
+				 this->robot->setIp("127.0.0.1");
+				 this->robot->setSimulateur(true);
 			 }
 			 else if(this->comboBox1->SelectedIndex == 1)
 			 {
-				 this->client->setIp("192.168.1.106");
-				this->client->getRobot()->setSimulateur(false);
+				 this->robot->setIp("192.168.1.106");
+				this->robot->setSimulateur(false);
 			 }
-			/*myThread = gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(this, &Form1::run));
-			myThread->Start();*/
-
+			 mutex->ReleaseMutex();
+			 /*
 			 if(client->connexion())
 			 {
 				 this->label1->ForeColor = System::Drawing::Color::Green;
@@ -258,82 +362,97 @@ private: System::Void button5_Click(System::Object^  sender, System::EventArgs^ 
 				 this->button6->Enabled = true;
 			 }
 			 else
-				 this->label1->ForeColor = System::Drawing::Color::Blue;
+				 this->label1->ForeColor = System::Drawing::Color::Blue;*/
+
+			 myThread = gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(this, &Form1::run));
+			 myThread->Start();
 			
 		 }
+
 private: System::Void button6_Click(System::Object^  sender, System::EventArgs^  e) {
-			 
+			 /*
 			 client->deconnexion();
 			 this->label1->ForeColor = System::Drawing::Color::Red;
 			 //On desactive le bouton connexion et on active celui de deconnexion
 			 this->button6->Enabled = false;
-			 this->button5->Enabled = true;
+			 this->button5->Enabled = true;*/
 		 }
 private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->KeyCode == Keys::Z)
-				 client->getRobot()->setKeyUp(true);
+				 robot->setKeyUp(true);
 			 if(e->KeyCode == Keys::S)
-				 client->getRobot()->setKeyDown(true);
+				 robot->setKeyDown(true);
 			 if(e->KeyCode == Keys::Q)
-				 client->getRobot()->setKeyLeft(true);
+				 robot->setKeyLeft(true);
 			 if(e->KeyCode == Keys::D)
-				 client->getRobot()->setKeyRight(true);
-			 client->sendData();
+				 robot->setKeyRight(true);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void Form1_KeyUp(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->KeyCode == Keys::Z)
-				 client->getRobot()->setKeyUp(false);
+				 robot->setKeyUp(false);
 			 if(e->KeyCode == Keys::S)
-				 client->getRobot()->setKeyDown(false);
+				 robot->setKeyDown(false);
 			 if(e->KeyCode == Keys::Q)
-				 client->getRobot()->setKeyLeft(false);
+				 robot->setKeyLeft(false);
 			 if(e->KeyCode == Keys::D)
-				 client->getRobot()->setKeyRight(false);
-			 client->sendData();
+				 robot->setKeyRight(false);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button1_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyUp(true);
-			 client->sendData();
+				 robot->setKeyUp(true);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button1_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyUp(false);
-			 client->sendData();
+				 robot->setKeyUp(false);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button2_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyDown(true);
-			 client->sendData();
+				 robot->setKeyDown(true);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button2_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyDown(false);
-			 client->sendData();
+				 robot->setKeyDown(false);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button3_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyRight(true);
-			 client->sendData();
+				 robot->setKeyRight(true);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button3_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyRight(false);
-			 client->sendData();
+				 robot->setKeyRight(false);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button4_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyLeft(true);
-			 client->sendData();
+				 robot->setKeyLeft(true);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void button4_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 mutex->WaitOne();
 			 if(e->Button == System::Windows::Forms::MouseButtons::Left)
-				 client->getRobot()->setKeyLeft(false);
-			 client->sendData();
+				 robot->setKeyLeft(false);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void trackBar1_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
-			 client->getRobot()->setSpeed(this->trackBar1->Value);
-			 client->sendData();
+			 mutex->WaitOne();
+			 robot->setSpeed(this->trackBar1->Value);
+			 mutex->ReleaseMutex();
 		 }
 private: System::Void comboBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }

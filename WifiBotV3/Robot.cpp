@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "Robot.h"
 
-Robot::Robot()
+Robot::Robot(System::Threading::Mutex^ mutex)
 {
+	this->mutex = mutex;
 	speed = 120;
 	leftSpeed = 0;
 	rightSpeed = 0;
@@ -118,4 +119,14 @@ void Robot::setSimulateur(bool b)
 bool Robot::getSimulateur()
 {
 	return simulateur;
+}
+
+void Robot::setIp(System::String^ ip)
+{
+	this->ip = ip;
+}
+
+System::String^ Robot::getIp()
+{
+	return ip;
 }
