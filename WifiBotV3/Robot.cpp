@@ -13,6 +13,7 @@ Robot::Robot(System::Threading::Mutex^ mutex)
 	keyLeft = false;
 	keyRight = false;
 	simulateur = false;
+	capt = gcnew Sensors;
 }
 
 int Robot::getLeftSpeed()
@@ -129,4 +130,9 @@ void Robot::setIp(System::String^ ip)
 System::String^ Robot::getIp()
 {
 	return ip;
+}
+
+Sensors^ Robot::getSensors()
+{
+	return capt;
 }

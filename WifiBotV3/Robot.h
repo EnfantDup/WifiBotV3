@@ -1,6 +1,7 @@
 #ifndef DEF_ROBOT
 #define DEF_ROBOT
 #include "stdafx.h"
+#include "Sensors.h"
 
 ref class Robot
 {
@@ -20,6 +21,7 @@ ref class Robot
 		void setKeyRight(bool right);
 		void setSimulateur(bool b);
 		void setIp(System::String^ ip);
+		Sensors^ getSensors();
 
 	private:
 		System::Threading::Mutex^ mutex;
@@ -32,6 +34,7 @@ ref class Robot
 		int leftSpeed;
 		int rightSpeed;
 		System::String^ ip;
+		Sensors^ capt;
 };
 
 #endif

@@ -20,7 +20,7 @@ namespace WifiBotV3 {
 	/// </summary>
 	public ref class Form1 : public System::Windows::Forms::Form
 	{
-	public: delegate void Del(int left);
+	public: delegate void Del(Sensors^ s);
 	public:
 	
 		Form1(void)
@@ -31,11 +31,17 @@ namespace WifiBotV3 {
 			//
 			mutex = gcnew System::Threading::Mutex;
 			robot = gcnew Robot(mutex);
+			m = gcnew Del(this, &Form1::setSensor);
 		}
 
-		void setSensor(int left)
+		void setSensor(Sensors^ s)
 		{
-			label2->Text = System::Convert::ToString(left);
+			label3->Text = System::Convert::ToString(s->leftSpeed);
+			label4->Text = System::Convert::ToString(s->rightSpeed);
+			label5->Text = System::Convert::ToString(s->IR[0]);
+			label6->Text = System::Convert::ToString(s->IR[1]);
+			label7->Text = System::Convert::ToString(s->IR[2]);
+			label8->Text = System::Convert::ToString(s->IR[3]);
 		}
 
 		void run()
@@ -161,9 +167,30 @@ namespace WifiBotV3 {
 					Console::WriteLine("RCV:", nbOctLu);
 				}
 			
-				int left = (int)((sensorData[1] << 8) + sensorData[0]);
+				/*int left = (int)((sensorData[1] << 8) + sensorData[0]);
 				Del^ m = gcnew Del(this, &Form1::setSensor);
-				this->Invoke(m, left);
+				this->Invoke(m, left);*/
+
+				Sensors^ s = robot->getSensors();
+
+				//Vitesse Gauche
+				s->leftSpeed = (int)((sensorData[1] << 8) + sensorData[0]);
+				if (s->leftSpeed > 32767) 
+					s->leftSpeed -= 65536;
+
+				//Niveau Batterie + Capteurs IR
+				s->batterie = (int)(sensorData[2]);
+				s->IR[0] = (int)(sensorData[3]);
+				s->IR[1] = (int)(sensorData[4]);
+				s->IR[2] = (int)(sensorData[11]);
+				s->IR[3] = (int)(sensorData[12]);
+
+				//Vitesse Droite
+				s->rightSpeed = (int)((sensorData[10] << 8) + sensorData[9]);
+				if (s->rightSpeed > 32767) 
+					s->rightSpeed -= 65536;
+
+				this->Invoke(m, s);
 				
 			}
 			mutex->ReleaseMutex();
@@ -206,6 +233,7 @@ namespace WifiBotV3 {
 
 	private: Robot^ robot;
 	private: bool continuer;
+	private: Del^ m;
 	
 
 				
@@ -224,6 +252,12 @@ namespace WifiBotV3 {
 	private: System::Net::Sockets::TcpClient^ client;
 private: System::Windows::Forms::TrackBar^  trackBar1;
 private: System::Windows::Forms::Label^  label2;
+private: System::Windows::Forms::Label^  label3;
+private: System::Windows::Forms::Label^  label4;
+private: System::Windows::Forms::Label^  label5;
+private: System::Windows::Forms::Label^  label6;
+private: System::Windows::Forms::Label^  label7;
+private: System::Windows::Forms::Label^  label8;
 
 
 	private:
@@ -249,6 +283,12 @@ private: System::Windows::Forms::Label^  label2;
 			this->button6 = (gcnew System::Windows::Forms::Button());
 			this->trackBar1 = (gcnew System::Windows::Forms::TrackBar());
 			this->label2 = (gcnew System::Windows::Forms::Label());
+			this->label3 = (gcnew System::Windows::Forms::Label());
+			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->label7 = (gcnew System::Windows::Forms::Label());
+			this->label8 = (gcnew System::Windows::Forms::Label());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->trackBar1))->BeginInit();
 			this->SuspendLayout();
 			// 
@@ -360,12 +400,72 @@ private: System::Windows::Forms::Label^  label2;
 			this->label2->TabIndex = 9;
 			this->label2->Text = L"label2";
 			// 
+			// label3
+			// 
+			this->label3->AutoSize = true;
+			this->label3->Location = System::Drawing::Point(317, 12);
+			this->label3->Name = L"label3";
+			this->label3->Size = System::Drawing::Size(13, 13);
+			this->label3->TabIndex = 10;
+			this->label3->Text = L"0";
+			// 
+			// label4
+			// 
+			this->label4->AutoSize = true;
+			this->label4->Location = System::Drawing::Point(317, 51);
+			this->label4->Name = L"label4";
+			this->label4->Size = System::Drawing::Size(13, 13);
+			this->label4->TabIndex = 11;
+			this->label4->Text = L"0";
+			// 
+			// label5
+			// 
+			this->label5->AutoSize = true;
+			this->label5->Location = System::Drawing::Point(317, 93);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(13, 13);
+			this->label5->TabIndex = 12;
+			this->label5->Text = L"0";
+			// 
+			// label6
+			// 
+			this->label6->AutoSize = true;
+			this->label6->Location = System::Drawing::Point(317, 143);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(13, 13);
+			this->label6->TabIndex = 13;
+			this->label6->Text = L"0";
+			// 
+			// label7
+			// 
+			this->label7->AutoSize = true;
+			this->label7->Location = System::Drawing::Point(317, 184);
+			this->label7->Name = L"label7";
+			this->label7->Size = System::Drawing::Size(13, 13);
+			this->label7->TabIndex = 14;
+			this->label7->Text = L"0";
+			// 
+			// label8
+			// 
+			this->label8->AutoSize = true;
+			this->label8->Location = System::Drawing::Point(317, 216);
+			this->label8->Name = L"label8";
+			this->label8->Size = System::Drawing::Size(13, 13);
+			this->label8->TabIndex = 15;
+			this->label8->Text = L"0";
+			// 
 			// Form1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->AutoSize = true;
-			this->ClientSize = System::Drawing::Size(274, 296);
+			this->ClientSize = System::Drawing::Size(405, 296);
+			this->Controls->Add(this->label8);
+			this->Controls->Add(this->label7);
+			this->Controls->Add(this->label6);
+			this->Controls->Add(this->label5);
+			this->Controls->Add(this->label4);
+			this->Controls->Add(this->label3);
 			this->Controls->Add(this->label2);
 			this->Controls->Add(this->button6);
 			this->Controls->Add(this->comboBox1);
