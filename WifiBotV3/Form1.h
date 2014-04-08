@@ -20,8 +20,9 @@ namespace WifiBotV3 {
 	/// </summary>
 	public ref class Form1 : public System::Windows::Forms::Form
 	{
-
+	public: delegate void Del(int left);
 	public:
+	
 		Form1(void)
 		{
 			InitializeComponent();
@@ -30,6 +31,11 @@ namespace WifiBotV3 {
 			//
 			mutex = gcnew System::Threading::Mutex;
 			robot = gcnew Robot(mutex);
+		}
+
+		void setSensor(int left)
+		{
+			label2->Text = System::Convert::ToString(left);
 		}
 
 		void run()
@@ -50,13 +56,17 @@ namespace WifiBotV3 {
 
 				//Récupération du flux
 				System::Net::Sockets::NetworkStream^ stream = client->GetStream();
+				continuer = true;
 
 				 
-				while(client->Connected)
+				while(client->Connected && continuer)
 				{
 					sendData(stream);
-					System::Threading::Thread::Sleep(50);
+					receveData(stream);
 				}
+
+				if(client->Connected)
+					client->Close();
 		   }
 		   catch ( ArgumentNullException^ e ) 
 		   {
@@ -77,15 +87,19 @@ namespace WifiBotV3 {
 				robot->proceedSpeed();
 				array<Byte>^ data = gcnew array<Byte>(2);
 				char left = 0, right = 0;
-				left = abs(robot->getLeftSpeed()/4);
-				right = abs(robot->getRightSpeed()/4);
+				left = robot->getLeftSpeed()/4;
+				right = robot->getRightSpeed()/4;
 				mutex->ReleaseMutex();
 
 				if(left >= 0)
-					left += 64;
+					left = abs(left) + 64;
+				else
+					left = abs(left);
 
 				if(right >= 0)
-					right += 64;
+					right = abs(right) + 64;
+				else
+					right = abs(right);
 
 				data[0] = left;
 				data[1] = right;
@@ -124,6 +138,36 @@ namespace WifiBotV3 {
 			
 	}
 
+		void receveData(System::Net::Sockets::NetworkStream^ stream)
+		{
+			mutex->WaitOne();
+			if(robot->getSimulateur())
+			{
+				array<Byte>^ sensorData = gcnew array<Byte>(7);
+				int av = stream->DataAvailable;
+				Console::WriteLine("RCV:", av);
+				while(stream->DataAvailable != 0)
+				{
+					stream->Read(sensorData, 0, sensorData->Length);
+					Console::WriteLine("RCV:", sensorData[0]);
+				}
+			}
+			else
+			{
+				array<Byte>^ sensorData = gcnew array<Byte>(21);
+				while(stream->DataAvailable != 0)
+				{
+					int nbOctLu = stream->Read(sensorData, 0, sensorData->Length);
+					Console::WriteLine("RCV:", nbOctLu);
+				}
+			
+				int left = (int)((sensorData[1] << 8) + sensorData[0]);
+				Del^ m = gcnew Del(this, &Form1::setSensor);
+				this->Invoke(m, left);
+				
+			}
+			mutex->ReleaseMutex();
+		}
 		short int Crc16(array<Byte>^ Adresse_tab , unsigned char Taille_max)
 		{
 				unsigned int Crc = 0xFFFF;
@@ -161,6 +205,8 @@ namespace WifiBotV3 {
 		}
 
 	private: Robot^ robot;
+	private: bool continuer;
+	
 
 				
 	private: System::Threading::Mutex^ mutex;
@@ -168,14 +214,16 @@ namespace WifiBotV3 {
 	private: System::Windows::Forms::Button^  button2;
 	private: System::Windows::Forms::Button^  button3;
 	private: System::Windows::Forms::Button^  button4;
-	private: System::Windows::Forms::TrackBar^  trackBar1;
+
 	private: System::Windows::Forms::Button^  button5;
 	private: System::Windows::Forms::Label^  label1;
 	private: System::Windows::Forms::ComboBox^  comboBox1;
 	private: System::Windows::Forms::Button^  button6;
 	private: System::Threading::Thread^ myThread;
-	private: System::Windows::Forms::NumericUpDown^  numericUpDown1;
+
 	private: System::Net::Sockets::TcpClient^ client;
+private: System::Windows::Forms::TrackBar^  trackBar1;
+private: System::Windows::Forms::Label^  label2;
 
 
 	private:
@@ -195,14 +243,13 @@ namespace WifiBotV3 {
 			this->button2 = (gcnew System::Windows::Forms::Button());
 			this->button3 = (gcnew System::Windows::Forms::Button());
 			this->button4 = (gcnew System::Windows::Forms::Button());
-			this->trackBar1 = (gcnew System::Windows::Forms::TrackBar());
 			this->button5 = (gcnew System::Windows::Forms::Button());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
 			this->button6 = (gcnew System::Windows::Forms::Button());
-			this->numericUpDown1 = (gcnew System::Windows::Forms::NumericUpDown());
+			this->trackBar1 = (gcnew System::Windows::Forms::TrackBar());
+			this->label2 = (gcnew System::Windows::Forms::Label());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->trackBar1))->BeginInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// button1
@@ -249,18 +296,6 @@ namespace WifiBotV3 {
 			this->button4->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button4_MouseDown);
 			this->button4->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::button4_MouseUp);
 			// 
-			// trackBar1
-			// 
-			this->trackBar1->Location = System::Drawing::Point(15, 143);
-			this->trackBar1->Maximum = 240;
-			this->trackBar1->Minimum = 1;
-			this->trackBar1->Name = L"trackBar1";
-			this->trackBar1->Size = System::Drawing::Size(237, 45);
-			this->trackBar1->TabIndex = 4;
-			this->trackBar1->TickFrequency = 10;
-			this->trackBar1->Value = 200;
-			this->trackBar1->ValueChanged += gcnew System::EventHandler(this, &Form1::trackBar1_ValueChanged);
-			// 
 			// button5
 			// 
 			this->button5->Location = System::Drawing::Point(142, 236);
@@ -292,7 +327,6 @@ namespace WifiBotV3 {
 			this->comboBox1->Size = System::Drawing::Size(121, 21);
 			this->comboBox1->TabIndex = 7;
 			this->comboBox1->SelectedIndexChanged += gcnew System::EventHandler(this, &Form1::comboBox1_SelectedIndexChanged);
-			this->comboBox1->SelectedIndex = 1;
 			// 
 			// button6
 			// 
@@ -305,12 +339,26 @@ namespace WifiBotV3 {
 			this->button6->UseVisualStyleBackColor = true;
 			this->button6->Click += gcnew System::EventHandler(this, &Form1::button6_Click);
 			// 
-			// numericUpDown1
+			// trackBar1
 			// 
-			this->numericUpDown1->Location = System::Drawing::Point(50, 195);
-			this->numericUpDown1->Name = L"numericUpDown1";
-			this->numericUpDown1->Size = System::Drawing::Size(120, 20);
-			this->numericUpDown1->TabIndex = 9;
+			this->trackBar1->Location = System::Drawing::Point(15, 143);
+			this->trackBar1->Maximum = 240;
+			this->trackBar1->Minimum = 1;
+			this->trackBar1->Name = L"trackBar1";
+			this->trackBar1->Size = System::Drawing::Size(237, 45);
+			this->trackBar1->TabIndex = 4;
+			this->trackBar1->TickFrequency = 10;
+			this->trackBar1->Value = 200;
+			this->trackBar1->ValueChanged += gcnew System::EventHandler(this, &Form1::trackBar1_ValueChanged);
+			// 
+			// label2
+			// 
+			this->label2->AutoSize = true;
+			this->label2->Location = System::Drawing::Point(15, 195);
+			this->label2->Name = L"label2";
+			this->label2->Size = System::Drawing::Size(35, 13);
+			this->label2->TabIndex = 9;
+			this->label2->Text = L"label2";
 			// 
 			// Form1
 			// 
@@ -318,7 +366,7 @@ namespace WifiBotV3 {
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->AutoSize = true;
 			this->ClientSize = System::Drawing::Size(274, 296);
-			this->Controls->Add(this->numericUpDown1);
+			this->Controls->Add(this->label2);
 			this->Controls->Add(this->button6);
 			this->Controls->Add(this->comboBox1);
 			this->Controls->Add(this->label1);
@@ -334,7 +382,6 @@ namespace WifiBotV3 {
 			this->KeyUp += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyUp);
 			this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyDown);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->trackBar1))->EndInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->numericUpDown1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -353,16 +400,11 @@ private: System::Void button5_Click(System::Object^  sender, System::EventArgs^ 
 				this->robot->setSimulateur(false);
 			 }
 			 mutex->ReleaseMutex();
-			 /*
-			 if(client->connexion())
-			 {
-				 this->label1->ForeColor = System::Drawing::Color::Green;
-				 //On desactive le bouton connexion et on active celui de deconnexion
-				 this->button5->Enabled = false;
-				 this->button6->Enabled = true;
-			 }
-			 else
-				 this->label1->ForeColor = System::Drawing::Color::Blue;*/
+
+			 this->label1->ForeColor = System::Drawing::Color::Green;
+			 //On desactive le bouton connexion et on active celui de deconnexion
+			 this->button5->Enabled = false;
+			 this->button6->Enabled = true;
 
 			 myThread = gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(this, &Form1::run));
 			 myThread->Start();
@@ -370,12 +412,12 @@ private: System::Void button5_Click(System::Object^  sender, System::EventArgs^ 
 		 }
 
 private: System::Void button6_Click(System::Object^  sender, System::EventArgs^  e) {
-			 /*
-			 client->deconnexion();
+			 
 			 this->label1->ForeColor = System::Drawing::Color::Red;
 			 //On desactive le bouton connexion et on active celui de deconnexion
 			 this->button6->Enabled = false;
-			 this->button5->Enabled = true;*/
+			 this->button5->Enabled = true;
+			 continuer = false;
 		 }
 private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 			 mutex->WaitOne();

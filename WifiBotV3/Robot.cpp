@@ -46,23 +46,23 @@ void Robot::proceedSpeed()
 {
 	if(keyUp && keyLeft)
 	{
-		leftSpeed = 0.5*speed;
+		leftSpeed = 0.4*speed;
 		rightSpeed = speed;
 	}
 	else if(keyUp && keyRight)
 	{
 		leftSpeed = speed;
-		rightSpeed = 0.5*speed;
+		rightSpeed = 0.4*speed;
 	}
 	else if(keyDown && keyLeft)
 	{
-		leftSpeed = -0.5*speed;
+		leftSpeed = -0.4*speed;
 		rightSpeed = -speed;
 	}
 	else if(keyDown && keyRight)
 	{
 		leftSpeed = -speed;
-		rightSpeed = -0.5*speed;
+		rightSpeed = -0.4*speed;
 	}
 	else if(keyUp)
 	{
