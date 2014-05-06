@@ -4,7 +4,7 @@
 Robot::Robot(System::Threading::Mutex^ mutex)
 {
 	this->mutex = mutex;
-	speed = 120;
+	speed = 180;
 	leftSpeed = 0;
 	rightSpeed = 0;
 

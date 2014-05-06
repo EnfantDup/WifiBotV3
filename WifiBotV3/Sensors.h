@@ -14,6 +14,7 @@ ref class Sensors
 		int rightSpeed;
 		int batterie;
 		array<int>^ IR;
+		int oct;
 };
 
 #endif
